@@ -1,5 +1,6 @@
-# **Custom Firmware Development Guide for Full Device Emulation**
+## Need DMA Equiptment? I recommend shopping with [DMAPolice.com](https://dmapolice.com/)
 
+# **Custom Firmware Development Guide for Full Device Emulation**
 
 ***v4 in progress***
 ---
