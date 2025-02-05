@@ -1,3 +1,5 @@
+## Need DMA Equiptment? I recommend shopping with [DMAPolice.com](https://dmapolice.com/)
+
 # **Part 1: Foundational Concepts**
 
 ## **1. Introduction**
