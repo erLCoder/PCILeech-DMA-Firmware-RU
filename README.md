@@ -1,7 +1,7 @@
 # **Custom Firmware Development Guide for Full Device Emulation**
 
 
-***Got some major changes planned, just want to validate accuracy prior to pushing to main branch.***
+***v4 in progress***
 ---
 ## **Table of Contents**
 
