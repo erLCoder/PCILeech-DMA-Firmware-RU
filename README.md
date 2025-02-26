@@ -2,7 +2,7 @@
 
 # **Custom Firmware Development Guide for Full Device Emulation**
 
-***v4 in progress***
+***v4 in progress - nearly done***
 ---
 ## **Table of Contents**
 
