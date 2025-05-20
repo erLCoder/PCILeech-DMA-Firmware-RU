@@ -2,6 +2,13 @@
 
 ---
 
+### Looking for CN translation verification prior to CN release.
+
+---
+
+***This will likely be the final itteration of the guide. Hope it has helped and continues to help.***
+
+---
 ## In Memoriam & Dedication
 
 ![Ross](https://github.com/user-attachments/assets/de7f12fe-8992-4738-a6af-712dc48217ee)
