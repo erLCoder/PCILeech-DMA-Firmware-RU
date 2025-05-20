@@ -2,31 +2,32 @@
 
 ---
 
-### Looking for CN translation verification prior to CN release.
+**A Note from the Author & Guide Status:**
+
+I'm sharing this transparently, as recent times have been incredibly challenging. Beyond a significant financial setback from a fraudulent chargeback, I've faced multiple other difficult living and health problems that have severely impacted my ability to be online and dedicate time to projects. Frankly, continuing to create comprehensive resources like this guide has been a profound struggle amidst these personal difficulties.
+
+This is anticipated to be the final major iteration of the main guide. For more experienced users already familiar with fundamental hardware concepts (e.g., the function of an FTDI chip), a concise, minified version will also be made available.
+
+If you find this work valuable and are in a position to help, any form of support would be profoundly appreciated. Your generosity enables me to continue contributing to this community despite the ongoing challenges. I sincerely hope this guide has been and continues to be a valuable resource.
 
 ---
 
-***This will likely be the final itteration of the guide. Hope it has helped and continues to help.***
-
----
 ## In Memoriam & Dedication
 
 ![Ross](https://github.com/user-attachments/assets/de7f12fe-8992-4738-a6af-712dc48217ee)
 
-This guide is humbly dedicated to the memory of  
+This guide is humbly dedicated to the memory of
 **Ross Freeman (1947–1989)**
 
-Visionary engineer, pioneering Michigander, co-founder of Xilinx, and father of the Field-Programmable Gate Array (FPGA) technology that revolutionized computing.
+A visionary engineer, pioneering Michigander, and co-founder of Xilinx, Ross Freeman is widely recognized as the father of Field-Programmable Gate Array (FPGA) technology, which revolutionized computing.
 
-In 1984, when the semiconductor industry focused on fixed-function chips, Freeman dared to imagine something different—hardware that could be reprogrammed after manufacturing. His revolutionary patent (#4,870,302) and tireless advocacy for reconfigurable computing unlocked a paradigm that continues to transform our world four decades later.
+In 1984, at a time when the semiconductor industry predominantly focused on fixed-function chips, Freeman dared to imagine a different paradigm: hardware that could be reprogrammed after manufacturing. His revolutionary patent (#4,870,302) and tireless advocacy for reconfigurable computing unlocked a technological paradigm that continues to transform our world four decades later.
 
 His groundbreaking innovation enabled the rapid prototyping and deployment of custom silicon solutions without the prohibitive costs of traditional ASIC development, democratizing hardware design and accelerating technological progress across countless domains.
 
-Today, Freeman's vision powers cutting-edge advancements in artificial intelligence, high-performance computing, telecommunications, automotive systems, aerospace applications, and countless other fields that were merely dreams during his lifetime.
+Today, Freeman's vision powers cutting-edge advancements in artificial intelligence, high-performance computing, telecommunications, automotive systems, aerospace applications, and numerous other fields that were merely dreams during his lifetime.
 
 Posthumously inducted into the National Inventors Hall of Fame in 2009, his legacy endures not merely in silicon, but in the spirit of technological audacity that challenges us all to question established limitations and imagine new possibilities.
-
-May his intellectual courage, foresight, and commitment to innovation continue to inspire generations of engineers, researchers, and dreamers who seek to expand the boundaries of what technology can achieve.
 
 *"The ultimate goal of the FPGA was to make programmable logic devices that could replace standard digital chips."* — Ross Freeman
 
