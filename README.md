@@ -104,20 +104,20 @@ The overarching goal of this guide is to empower you with the knowledge and prac
 *   **Driver Analysis**: Observe how operating systems and specific drivers interact with hardware. You can emulate devices with non-standard configurations or undocumented features to understand driver behavior, identify security assumptions, or reverse-engineer proprietary protocols.
 *   **Side-Channel Analysis**: While more complex, an emulated device could potentially be programmed to assist in experiments related to information leakage through timing or power analysis, by precisely controlling peripheral operations.
 
-**Red Teaming & Penetration Testing** 🎯:
+**Red Teaming & Penetration Testing**:
 *   **Bypassing Security Measures**: Emulate a seemingly benign or whitelisted hardware device (e.g., a common NIC or storage controller) to gain DMA privileges. Once achieved, this allows direct interaction with system memory, potentially bypassing endpoint detection and response (EDR) systems or anti-malware solutions that operate at higher software layers.
 *   **Stealthy Persistence**: An emulated malicious device could offer a covert way to maintain access to a compromised system, as it might be harder to detect than software-based implants.
 *   **Exploiting Trust Relationships**: Systems often have implicit trust in connected hardware. Custom firmware can exploit this by mimicking devices that are granted specific permissions or access.
 
-**System Debugging & Diagnostics** 🛠️:
+**System Debugging & Diagnostics**:
 *   **Reproducible Testbeds**: Create highly specific hardware scenarios to reliably reproduce elusive bugs that may only occur with particular device states or data patterns.
 *   **Fault Injection**: Intentionally emulate faulty device behavior (e.g., incorrect TLP formation, delayed responses) to test the robustness and error handling capabilities of the host system and its drivers.
 
-**Hardware Testing & Validation** ✅:
+**Hardware Testing & Validation**:
 *   **Driver Development**: Test new or modified drivers against an emulated hardware profile before physical prototypes are available, or to simulate a wider range of hardware variants than physically accessible.
 *   **Compliance Testing**: While not a substitute for official compliance tests, an emulated device can help pre-verify certain aspects of PCIe protocol adherence.
 
-**Legacy System Support & Interoperability** 🔄:
+**Legacy System Support & Interoperability**:
 *   Emulate older, discontinued, or hard-to-source PCIe devices to keep legacy systems operational or to bridge compatibility gaps between different hardware generations.
 
 By progressing through this guide, you will gain proficiency in:
