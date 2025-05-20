@@ -99,7 +99,7 @@ May his intellectual courage, foresight, and commitment to innovation continue t
 
 The overarching goal of this guide is to empower you with the knowledge and practical skills to develop custom Direct Memory Access (DMA) firmware for Field-Programmable Gate Array (FPGA)-based devices. This specialized firmware allows your FPGA to accurately emulate the identity and behavior of other PCIe (Peripheral Component Interconnect Express) hardware devices. Such emulation is a powerful technique with profound implications across several advanced domains:
 
-**Hardware Security Research** 🔬:
+**Hardware Security Research**:
 *   **Vulnerability Discovery**: By emulating a device, you can create a controlled environment to send malformed or unexpected data to host drivers, systematically fuzzing for vulnerabilities (e.g., buffer overflows, race conditions) that might be exploitable from a hardware peripheral.
 *   **Driver Analysis**: Observe how operating systems and specific drivers interact with hardware. You can emulate devices with non-standard configurations or undocumented features to understand driver behavior, identify security assumptions, or reverse-engineer proprietary protocols.
 *   **Side-Channel Analysis**: While more complex, an emulated device could potentially be programmed to assist in experiments related to information leakage through timing or power analysis, by precisely controlling peripheral operations.
