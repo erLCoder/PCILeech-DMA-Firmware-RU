@@ -2,6 +2,10 @@
 
 ---
 
+Working on organizing this into a [wiki](https://github.com/JPShag/PCILeech-DMA-Firmware/wiki/Introduction). Help is welcomed!
+
+----
+
 **A Note from the Author & Guide Status:**
 
 I'm sharing this transparently, as recent times have been incredibly challenging. Beyond a significant financial setback from a fraudulent chargeback, I've faced multiple other difficult living and health problems that have severely impacted my ability to be online and dedicate time to projects. Frankly, continuing to create comprehensive resources like this guide has been a profound struggle amidst these personal difficulties.
