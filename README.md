@@ -118,124 +118,124 @@
 *   **Анализ драйверов**: наблюдение за взаимодействием ОС и драйверов с аппаратным обеспечением, включая эмуляцию нестандартных или недокументированных функций, помогает понять поведение драйвера и изучить закрытые протоколы.
 *   **Анализ побочных каналов**: эмулированное устройство можно настроить для экспериментов, связанных с утечкой информации через временные задержки или потребление энергии.
 
-**Red Teaming & Penetration Testing**:
-*   **Bypassing Security Measures**: Emulate a seemingly benign or whitelisted hardware device (e.g., a common NIC or storage controller) to gain DMA privileges. Once achieved, this allows direct interaction with system memory, potentially bypassing endpoint detection and response (EDR) systems or anti-malware solutions that operate at higher software layers.
-*   **Stealthy Persistence**: An emulated malicious device could offer a covert way to maintain access to a compromised system, as it might be harder to detect than software-based implants.
-*   **Exploiting Trust Relationships**: Systems often have implicit trust in connected hardware. Custom firmware can exploit this by mimicking devices that are granted specific permissions or access.
+**Red Team и тестирование на проникновение**:
+*   **Обход мер безопасности**: эмуляция безобидного или доверенного устройства (например, сетевой карты или контроллера хранения) для получения прав DMA, что позволяет напрямую взаимодействовать с памятью системы и обходить системы защиты на программном уровне.
+*   **Скрытое присутствие**: эмулированное вредоносное устройство может оставаться незаметным дольше, чем программные импланты.
+*   **Эксплуатация доверия**: системы часто автоматически доверяют подключённому аппаратному обеспечению. Кастомная прошивка может использовать это, подделывая устройства с нужными разрешениями.
 
-**System Debugging & Diagnostics**:
-*   **Reproducible Testbeds**: Create highly specific hardware scenarios to reliably reproduce elusive bugs that may only occur with particular device states or data patterns.
-*   **Fault Injection**: Intentionally emulate faulty device behavior (e.g., incorrect TLP formation, delayed responses) to test the robustness and error handling capabilities of the host system and its drivers.
+**Отладка и диагностика систем**:
+*   **Воспроизводимые тестовые среды**: создание специфичных аппаратных сценариев для надёжного воспроизведения сложных багов.
+*   **Инъекция ошибок**: намеренная эмуляция неправильного поведения устройства (например, сбоев в формировании TLP или задержек ответов) для проверки устойчивости системы и драйверов.
 
-**Hardware Testing & Validation**:
-*   **Driver Development**: Test new or modified drivers against an emulated hardware profile before physical prototypes are available, or to simulate a wider range of hardware variants than physically accessible.
-*   **Compliance Testing**: While not a substitute for official compliance tests, an emulated device can help pre-verify certain aspects of PCIe protocol adherence.
+**Тестирование и валидация аппаратуры**:
+*   **Разработка драйверов**: тестирование новых или изменённых драйверов с эмулируемым устройством до появления физических прототипов.
+*   **Предварительное соответствие стандартам**: предварительная проверка аспектов протокола PCIe.
 
-**Legacy System Support & Interoperability**:
-*   Emulate older, discontinued, or hard-to-source PCIe devices to keep legacy systems operational or to bridge compatibility gaps between different hardware generations.
+**Поддержка устаревших систем и совместимость**:
+*   Эмуляция устаревших или редких PCIe-устройств для обеспечения работы старых систем или совместимости между разными поколениями аппаратуры.
 
-By progressing through this guide, you will gain proficiency in:
-*   Meticulously extracting identifying attributes and configuration details from a physical "donor" PCIe device.
-*   Modifying and extending existing open-source FPGA firmware frameworks (with a primary focus on the widely-used PCILeech-FPGA project) to adopt the identity of the donor device.
-*   Configuring and utilizing a professional FPGA development toolchain, centered around Xilinx Vivado, alongside essential code editing tools like Visual Studio Code.
-*   Developing a solid understanding of the PCIe architecture's layered model, the mechanics of DMA data transfers, and the nuances of crafting firmware that faithfully replicates hardware behavior at a low level.
+Продвигаясь по этому руководству, вы научитесь:
+*   Тщательно извлекать идентифицирующие атрибуты и конфигурационные данные с реального «донорского» PCIe-устройства.
+*   Модифицировать и расширять существующие open-source FPGA прошивки (особенно PCILeech-FPGA) для подделки идентичности донорского устройства.
+*   Использовать профессиональный инструментарий для FPGA-разработки на базе Xilinx Vivado, а также редакторы кода (например, Visual Studio Code).
+*   Понимать архитектуру PCIe, принципы работы DMA и нюансы разработки прошивки, которая достоверно повторяет поведение аппаратуры.
 
-### **1.2 Target Audience**
+### **1.2 Целевая аудитория**
 
-This guide is tailored for individuals who already possess a foundational to intermediate knowledge of computer systems, hardware principles, and software development. The content is technically demanding and assumes a capacity for detailed, low-level work. Specifically, it caters to:
+Это руководство предназначено для тех, кто уже имеет базовые или средние знания в области компьютерных систем, аппаратуры и программирования. Оно технически сложное и требует внимания к низкоуровневым деталям. В частности, оно адресовано:
 
-*   **Firmware Developers**: Engineers aiming to design or adapt firmware for FPGAs, especially for applications involving high-speed data transfer (DMA) and direct hardware interface manipulation over PCIe. A background in Verilog/VHDL and experience with FPGA development tools are highly recommended.
-*   **Hardware Engineers**: Professionals involved in the design, testing, or validation of PCIe-based hardware. This guide can help in creating sophisticated test harnesses or emulating components within a larger system design. Familiarity with PCIe protocol and digital design is expected.
-*   **Cybersecurity Professionals & Researchers**:
-    *   **Vulnerability Researchers & Exploit Developers**: Those looking to explore hardware-level attack surfaces or develop proof-of-concept exploits leveraging DMA. Understanding of OS internals, memory management, and driver architecture is crucial.
-    *   **Red Team Members**: Operators seeking advanced techniques for system access, persistence, and data exfiltration by leveraging direct hardware manipulation.
-    *   **Digital Forensics & Incident Responders**: While this guide is offensively focused, understanding these techniques can aid in recognizing and analyzing sophisticated hardware-based attacks.
-*   **FPGA Enthusiasts & Advanced Hobbyists**: Individuals with prior FPGA project experience who are eager to tackle complex challenges like PCIe communication and hardware emulation. A willingness to delve into datasheets and technical specifications is key.
+*   **Разработчикам прошивки**: инженерам, создающим или адаптирующим прошивку для FPGA, особенно для задач высокоскоростной передачи данных (DMA) и прямого взаимодействия с аппаратурой по PCIe. Желателен опыт работы с Verilog/VHDL и инструментами FPGA.
+*   **Аппаратным инженерам**: специалистам по проектированию и тестированию PCIe-устройств, которые хотят создавать сложные тестовые стенды или эмулировать компоненты. Требуется знание PCIe и цифрового проектирования.
+*   **Профессионалам в области кибербезопасности и исследованиям**:
+    *   **Исследователям уязвимостей и разработчикам эксплойтов**: для изучения аппаратных векторов атак и создания доказательств концепции. Нужно знать устройство ОС, управление памятью, архитектуру драйверов.
+    *   **Red Team**: специалисты, ищущие расширенные методы проникновения и устойчивого доступа.
+    *   **Цифровым криминалистам и инцидент-респонсерам**: понимание этих техник поможет анализировать сложные аппаратные атаки.
+*   **FPGA-энтузиастам и продвинутым хоббистам**: тем, кто уже работал с FPGA и хочет углубиться в PCIe и аппаратную эмуляцию. Важно желание разбираться в технических спецификациях и документации.
 
-**Prerequisite Knowledge (Recommended)**:
-*   Solid understanding of digital logic and computer architecture.
-*   Familiarity with at least one Hardware Description Language (HDL), such as Verilog or VHDL.
-*   Basic proficiency in a Linux environment (many tools and scripts are Linux-friendly) and familiarity with command-line interfaces.
-*   Experience with a C/C++ or a scripting language (like Python) for host-side interaction or test scripting.
-*   A conceptual understanding of operating system principles (memory management, drivers, interrupts).
-*   Patience and a methodical approach to debugging, as firmware development can be intricate.
+**Рекомендуемые знания**:
+*   Основы цифровой логики и компьютерной архитектуры.
+*   Знакомство с HDL (Verilog или VHDL).
+*   Навыки работы в Linux и с командной строкой.
+*   Опыт программирования на C/C++ или скриптовых языках (Python).
+*   Понимание принципов работы ОС (управление памятью, драйверы, прерывания).
+*   Терпение и системный подход к отладке.
 
-The learning curve can be steep, especially if PCIe or advanced FPGA concepts are new. However, the guide aims to break down complex topics into manageable steps.
+Кривая обучения может быть крутой, особенно если PCIe или продвинутые концепции FPGA для вас новы. Тем не менее, руководство стремится разбить сложные темы на понятные и выполнимые шаги.
 
-### **1.3 How to Use This Guide**
+### **1.3 Как использовать руководство**
 
-This guide is segmented into three logically progressing parts designed to build your knowledge incrementally:
+Руководство разделено на три логически связанных части, которые постепенно наращивают ваши знания:
 
-*   **Part 1: Foundational Concepts**: This initial part is crucial. It introduces the core terminology, the underlying principles of PCIe and DMA, the necessary hardware and software stack (including setup instructions for tools like Xilinx Vivado and the PCILeech-FPGA framework), and the initial procedures for acquiring vital information from your target "donor" device and making basic firmware modifications. It is strongly advised to work through this part sequentially and thoroughly.
-*   **Part 2: Intermediate Concepts and Implementation**: (Forthcoming sections) Building on the foundation, this part will guide you through more advanced firmware customizations. Topics will include fine-tuning PCIe operational parameters, emulating device-specific registers and capabilities (such as power management states and Message Signaled Interrupts - MSI/MSI-X), and gaining an initial understanding of constructing and interpreting Transaction Layer Packets (TLPs).
-*   **Part 3: Advanced Techniques and Optimization**: (Forthcoming sections) The final part will explore sophisticated debugging methodologies (including the use of Integrated Logic Analyzers - ILAs and external PCIe protocol analyzers), techniques for optimizing firmware performance and emulation accuracy, comprehensive troubleshooting for common and complex issues, and a critical discussion on best practices, particularly focusing on the security implications of developing and deploying emulated PCIe devices.
+*   **Часть 1: Базовые концепции**: вводная часть, знакомит с терминологией, основами PCIe и DMA, необходимым аппаратным и программным обеспечением, настройкой инструментов Vivado и PCILeech-FPGA, а также начальным сбором информации с донорского устройства и базовыми изменениями прошивки. Рекомендуется проходить последовательно и вдумчиво.
+*   **Часть 2: Средний уровень и реализация**: (в разработке) Рассмотрит продвинутые настройки прошивки, эмуляцию специфичных регистров и возможностей устройств, работу с пакетами уровня транзакций (TLP).
+*   **Часть 3: Продвинутые техники и оптимизация**: (в разработке) Будет посвящена продвинутой отладке, оптимизации производительности и точности эмуляции, устранению ошибок и лучшим практикам с учётом безопасности.
 
-**Working Through the Guide**:
-*   **Sequential Progression**: Especially for Parts 1 and 2, follow the sections in order, as later concepts build upon earlier ones.
-*   **Hands-On Practice**: This is a practical guide. Actively perform the setup steps, code modifications, and experiments on your own hardware.
-*   **Adapt to Your Environment**: File paths, specific device IDs, and software versions may vary. Understand the concepts behind the instructions to adapt them to your particular setup.
-*   **Consult External Resources**: The PCIe specification and FPGA documentation are your ultimate references. This guide simplifies and directs, but deep dives often require consulting primary sources.
-*   **Iterative Development**: Firmware development is rarely linear. Expect to iterate, debug, and refine your designs. Use the troubleshooting sections and debugging techniques extensively.
+**Советы по работе с руководством**:
+*   **Последовательное изучение**: Особенно для частей 1 и 2 следуйте разделам по порядку, так как последующие концепции строятся на предыдущих.
+*   **Практические упражнения**: Это практическое руководство. Активно выполняйте шаги настройки, вносите изменения в код и проводите эксперименты на своем оборудовании.
+*   **Адаптация к вашей среде**: Пути к файлам, конкретные идентификаторы устройств и версии программного обеспечения могут отличаться. Понимайте суть инструкций, чтобы адаптировать их под вашу конфигурацию.
+*   **Обращение к внешним ресурсам**: Спецификация PCIe и документация по FPGA — ваши основные источники информации. Это руководство упрощает и направляет, но для глубокого понимания иногда нужно обращаться к первоисточникам.
+*   **Итеративная разработка**: Разработка прошивки редко бывает линейной. Ожидайте, что придется многократно повторять, отлаживать и улучшать свои проекты. Активно пользуйтесь разделами по устранению неполадок и техниками отладки.
 
-You will be working with HDLs (SystemVerilog in PCILeech-FPGA), FPGA synthesis and implementation tools (Vivado), and potentially host-side programming tools and PCIe analysis utilities.
+Вы будете работать с языками описания аппаратуры (HDL, в частности SystemVerilog в PCILeech-FPGA), инструментами синтеза и реализации FPGA (Vivado), а также, возможно, с инструментами программирования хоста и анализа PCIe.
 
 ---
 
-## **2. Key Definitions**
+## **2. Ключевые определения**
 
-A solid grasp of the following terminology is essential for navigating the complexities of PCIe device emulation and custom firmware development. These terms will be used extensively throughout the guide.
+Для успешного освоения эмуляции PCIe-устройств и разработки кастомной прошивки важно чётко понимать следующие термины. Они будут часто использоваться в руководстве.
 
 *   **DMA (Direct Memory Access)**:
-    *   **Definition**: A fundamental feature of modern computer architectures that allows hardware peripherals (like network cards, GPUs, or your FPGA-based emulated device) to read from and write to the main system memory (RAM) directly, without involving the Central Processing Unit (CPU) for every byte transferred.
-    *   **Significance**: DMA is crucial for high-performance I/O operations. By offloading data transfer tasks from the CPU, it frees up the CPU to perform other computations, significantly improving overall system throughput and efficiency. In the context of this guide, your FPGA will leverage DMA to interact with the host system's memory, which is a powerful capability often targeted in security research and red teaming.
+    *   **Определение**: Функция современных компьютерных архитектур, позволяющая аппаратным устройствам (например, сетевым картам, графическим процессорам или эмулируемому FPGA-устройству) напрямую читать и записывать данные в основную системную память (RAM), минуя центральный процессор (CPU) при каждом передаваемом байте.
+    *   **Значение**: DMA критически важно для высокопроизводительных операций ввода-вывода. Освобождая CPU от задач передачи данных, оно позволяет процессору выполнять другие вычисления, значительно повышая общую пропускную способность и эффективность системы. В контексте этого руководства FPGA будет использовать DMA для взаимодействия с памятью хоста — мощная возможность, активно применяемая в исследованиях безопасности и red teaming.
 
-*   **PCIe (Peripheral Component Interconnect Express)**:
-    *   **Definition**: A high-speed serial computer expansion bus standard designed to replace older bus standards like PCI, PCI-X, and AGP. It uses a point-to-point topology, with separate serial links connecting each device to the root complex (typically part of the chipset or CPU). Communication occurs via packets.
-    *   **Significance**: PCIe is the dominant standard for connecting high-performance peripherals to motherboards. Understanding its protocol, layered architecture (Physical Layer, Data Link Layer, Transaction Layer), and configuration mechanisms is paramount for emulating any modern hardware device.
+*   **PCIe (Peripheral Component Interconnect Express, периферийная компонентная шина Express)**:
+    *   **Определение**: Высокоскоростной последовательный стандарт расширения компьютера, предназначенный заменить более старые стандарты, такие как PCI, PCI-X и AGP. Использует точечно-точечную топологию, при которой каждое устройство соединяется отдельной последовательной связью с корневым комплексом (обычно часть чипсета или процессора). Передача данных происходит посредством пакетов.
+    *   **Значение**: доминирующий стандарт подключения высокопроизводительных периферийных устройств к материнским платам. Понимание его протокола, слоистой архитектуры (физический, канальный и транспортный уровни) и механизмов конфигурации является обязательным для эмуляции современных устройств.
 
 *   **TLP (Transaction Layer Packet)**:
-    *   **Definition**: The fundamental unit of data exchange at the Transaction Layer of the PCIe protocol. TLPs are responsible for conveying requests (e.g., memory read/write, I/O read/write, configuration read/write) and completions (responses to requests) between PCIe devices. Each TLP consists of a header, an optional data payload, and an optional End-to-End CRC (ECRC).
-    *   **Significance**: To emulate a device accurately, your FPGA firmware must be capable of correctly forming, transmitting, receiving, and interpreting TLPs that match the behavior of the donor device. Understanding TLP types, formats, and flow control is critical for advanced emulation.
+    *   **Определение**: Основная единица обмена данными на транспортном уровне PCIe. TLP предназначены для передачи запросов (например, чтение/запись памяти, чтение/запись ввода-вывода, чтение/запись конфигурации) и ответов (завершение запросов) между PCIe-устройствами. Каждый TLP состоит из заголовка, опциональных данных и, при необходимости, сквозной контрольной суммы (ECRC).
+    *   **Значение**: Для точной эмуляции устройство на FPGA должно уметь правильно формировать, отправлять, принимать и интерпретировать TLP, соответствующие поведению исходного (донорского) устройства. Понимание типов TLP, их форматов и управления потоком — ключ к продвинутой эмуляции.
 
 *   **BAR (Base Address Register)**:
-    *   **Definition**: Located within a PCIe device's Configuration Space, BARs are special registers used by the device to request address space resources from the host system. A device can have up to six 32-bit BARs (or fewer, or pairs of 32-bit BARs can form 64-bit BARs). These registers define the starting addresses and sizes of memory-mapped I/O (MMIO) regions or I/O port regions that the device uses to expose its registers and internal memory to the host CPU.
-    *   **Significance**: When the host system enumerates a PCIe device, it reads the BARs to determine the device's memory and I/O requirements, then allocates and programs these BARs with the actual base addresses in the system's physical address map. Your emulated device must accurately define its BARs to match the donor device so that the host OS and drivers can interact with it correctly.
+    *   **Определение**: : Расположены в пространстве конфигурации PCIe-устройства, BAR — специальные регистры, которые устройство использует для запроса ресурсов адресного пространства у хоста. У устройства может быть до шести 32-битных BAR (или меньше), а некоторые пары 32-битных BAR могут образовывать 64-битные BAR. Эти регистры определяют начальные адреса и размеры областей памяти с отображением ввода-вывода (MMIO) или портов ввода-вывода, через которые устройство предоставляет доступ к своим внутренним регистрами и памяти для процессора хоста.
+    *   **Значение**: При перечислении PCIe-устройства хост читает BAR, чтобы понять требования устройства к памяти и I/O, затем выделяет и программирует эти регистры с реальными базовыми адресами в физическом адресном пространстве системы. Для корректного взаимодействия с хостом и драйверами ваше эмулируемое устройство должно точно соответствовать BAR донорского устройства.
 
 *   **FPGA (Field-Programmable Gate Array)**:
-    *   **Definition**: An integrated circuit (IC) that can be configured by a designer or customer after manufacturing – hence "field-programmable." FPGAs contain an array of programmable logic blocks and a hierarchy of reconfigurable interconnects that allow the blocks to be "wired together" to implement custom digital logic circuits.
-    *   **Significance**: FPGAs are the core hardware used in this guide. Their reconfigurable nature makes them ideal for emulating other hardware devices, as you can define the precise logic and interfaces required to mimic the donor device's PCIe presence and behavior.
+    *   **Определение**: Интегральная схема, которую можно конфигурировать после изготовления — именно поэтому она называется «программируемой в поле». FPGA содержит массив программируемых логических блоков и многоуровневую систему перенастраиваемых соединений, позволяющих «сшивать» блоки в пользовательские цифровые схемы.
+    *   **Значение**: это основное аппаратное средство в этом руководстве. Благодаря своей перенастраиваемости они идеально подходят для эмуляции других устройств, так как позволяют реализовать точную логику и интерфейсы, необходимые для имитации присутствия и поведения PCIe-устройства-донора.
 
 *   **MSI/MSI-X (Message Signaled Interrupts / Message Signaled Interrupts Extended)**:
-    *   **Definition**: Mechanisms that allow a PCIe device to deliver interrupts to the CPU by writing a special message (a TLP, specifically a Memory Write TLP) to a system-defined memory address, rather than using dedicated physical interrupt lines (as in legacy PCI). MSI-X is an enhancement of MSI, offering more interrupt vectors and greater flexibility.
-    *   **Significance**: Most modern PCIe devices use MSI or MSI-X for more efficient and flexible interrupt handling. Accurate emulation often requires implementing the chosen interrupt mechanism of the donor device, including configuring the MSI/MSI-X capability structures and generating interrupt messages correctly.
+    *   **Определение**: Механизмы, позволяющие PCIe-устройству генерировать прерывания CPU путём записи специального сообщения (TLP — в частности Memory Write TLP) в системный адрес памяти, вместо использования выделенных физических линий прерываний, как в устаревших PCI. MSI-X — расширение MSI с поддержкой большего числа векторов прерываний и повышенной гибкости.
+    *   **Значение**: Большинство современных PCIe-устройств используют MSI или MSI-X для более эффективного и гибкого управления прерываниями. Точная эмуляция часто требует реализации выбранного механизма прерываний устройства-донора, включая настройку соответствующих структур возможностей MSI/MSI-X и корректную генерацию сообщений прерываний.
 
 *   **DSN (Device Serial Number)**:
-    *   **Definition**: A 64-bit globally unique identifier that can be optionally implemented by a PCIe device. If present, it's typically located in an extended capability structure within the device's Configuration Space.
-    *   **Significance**: While not all devices have a DSN, some drivers or management software might use it for unique identification, licensing, or tracking purposes. Emulating it correctly can be important for full transparency and avoiding detection of the emulated device.
+    *   **Определение**: A 64-bit globally unique identifier that can be optionally implemented by a PCIe device. If present, it's typically located in an extended capability structure within the device's Configuration Space.
+    *   **Значение**: While not all devices have a DSN, some drivers or management software might use it for unique identification, licensing, or tracking purposes. Emulating it correctly can be important for full transparency and avoiding detection of the emulated device.
 
 *   **PCIe Configuration Space**:
-    *   **Definition**: A standardized 256-byte (for Type 0, endpoint devices) or 4KB address region associated with each PCIe function (a device can have multiple functions). This space contains vital information about the device, including its Vendor ID, Device ID, Class Code, Revision ID, BARs, capability pointers, and various status and control registers. It is accessed by the host system using special Configuration Read and Configuration Write TLPs.
-    *   **Significance**: The Configuration Space is the "identity card" of a PCIe device. The very first step in device emulation is to meticulously replicate the relevant parts of the donor device's Configuration Space in your FPGA firmware. The host system uses this information to identify, configure, and allocate resources to the device.
+    *   **Определение**: A standardized 256-byte (for Type 0, endpoint devices) or 4KB address region associated with each PCIe function (a device can have multiple functions). This space contains vital information about the device, including its Vendor ID, Device ID, Class Code, Revision ID, BARs, capability pointers, and various status and control registers. It is accessed by the host system using special Configuration Read and Configuration Write TLPs.
+    *   **Значение**: The Configuration Space is the "identity card" of a PCIe device. The very first step in device emulation is to meticulously replicate the relevant parts of the donor device's Configuration Space in your FPGA firmware. The host system uses this information to identify, configure, and allocate resources to the device.
 
 *   **Donor Device**:
-    *   **Definition**: The physical PCIe hardware device whose identity and behavior you aim to emulate on your FPGA. This device serves as the source for extracting configuration details (Vendor ID, Device ID, BAR settings, capabilities, etc.) and behavioral patterns.
-    *   **Significance**: The fidelity of your emulation directly depends on how accurately and completely you can gather and replicate the characteristics of the donor device.
+    *   **Определение**: The physical PCIe hardware device whose identity and behavior you aim to emulate on your FPGA. This device serves as the source for extracting configuration details (Vendor ID, Device ID, BAR settings, capabilities, etc.) and behavioral patterns.
+    *   **Значение**: The fidelity of your emulation directly depends on how accurately and completely you can gather and replicate the characteristics of the donor device.
 
 *   **Root Complex (RC)**:
-    *   **Definition**: The entity in a PCIe hierarchy that connects the CPU and memory subsystem to the PCIe fabric. It generates PCIe transactions on behalf of the CPU and processes transactions initiated by downstream PCIe devices. It also performs the initial bus enumeration and configuration.
-    *   **Significance**: Your emulated device will primarily interact with the Root Complex (or switches connected to it) when communicating with the host system.
+    *   **Определение**: The entity in a PCIe hierarchy that connects the CPU and memory subsystem to the PCIe fabric. It generates PCIe transactions on behalf of the CPU and processes transactions initiated by downstream PCIe devices. It also performs the initial bus enumeration and configuration.
+    *   **Значение**: Your emulated device will primarily interact with the Root Complex (or switches connected to it) when communicating with the host system.
 
 *   **Endpoint (EP)**:
-    *   **Definition**: A type of PCIe device that resides at the periphery of the PCIe fabric, consuming or producing data. Examples include network cards, graphics cards, storage controllers, and the FPGA device you will be programming. Endpoints request resources and initiate transactions to the Root Complex.
-    *   **Significance**: In this guide, your FPGA will be programmed to act as an Endpoint device, emulating a specific donor Endpoint.
+    *   **Определение**: A type of PCIe device that resides at the periphery of the PCIe fabric, consuming or producing data. Examples include network cards, graphics cards, storage controllers, and the FPGA device you will be programming. Endpoints request resources and initiate transactions to the Root Complex.
+    *   **Значение**: In this guide, your FPGA will be programmed to act as an Endpoint device, emulating a specific donor Endpoint.
 
 *   **HDL (Hardware Description Language)**:
-    *   **Definition**: A specialized computer language used to describe the structure, design, and operation of electronic circuits, particularly digital logic circuits. Common HDLs include Verilog and VHDL.
-    *   **Significance**: You will be working with Verilog (specifically SystemVerilog, an extension of Verilog) within the PCILeech-FPGA project to define the custom logic for your emulated device.
+    *   **Определение**: A specialized computer language used to describe the structure, design, and operation of electronic circuits, particularly digital logic circuits. Common HDLs include Verilog and VHDL.
+    *   **Значение**: You will be working with Verilog (specifically SystemVerilog, an extension of Verilog) within the PCILeech-FPGA project to define the custom logic for your emulated device.
 
 *   **Bitstream**:
-    *   **Definition**: The final configuration file that is loaded onto an FPGA to program its logic blocks and interconnects, thereby implementing your custom hardware design. It's the compiled output from the FPGA development tools (like Xilinx Vivado).
-    *   **Significance**: Generating and flashing the correct bitstream is the ultimate step in deploying your custom firmware onto the FPGA.
+    *   **Определение**: The final configuration file that is loaded onto an FPGA to program its logic blocks and interconnects, thereby implementing your custom hardware design. It's the compiled output from the FPGA development tools (like Xilinx Vivado).
+    *   **Значение**: Generating and flashing the correct bitstream is the ultimate step in deploying your custom firmware onto the FPGA.
 
 ---
 
