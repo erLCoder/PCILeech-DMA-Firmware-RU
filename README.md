@@ -2,7 +2,7 @@
 
 ---
 
-Работаю над организацией этого в виде[wiki](https://github.com/JPShag/PCILeech-DMA-Firmware/wiki/Introduction). Помощь приветствуется!
+Работаю над организацией этого в виде [wiki](https://github.com/JPShag/PCILeech-DMA-Firmware/wiki/Introduction). Помощь приветствуется!
 
 ----
 
