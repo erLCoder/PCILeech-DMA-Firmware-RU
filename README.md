@@ -1,122 +1,122 @@
-# **Custom Firmware Development Guide for Full Device Emulation**
+# **Руководство по разработке пользовательской прошивки для полной эмуляции устройства**
 
 ---
 
-Working on organizing this into a [wiki](https://github.com/JPShag/PCILeech-DMA-Firmware/wiki/Introduction). Help is welcomed!
+Работаю над организацией этого в виде[wiki](https://github.com/JPShag/PCILeech-DMA-Firmware/wiki/Introduction). Помощь приветствуется!
 
 ----
 
-**A Note from the Author & Guide Status:**
+**Примечание от автора и статус руководства:**
 
-I'm sharing this transparently, as recent times have been incredibly challenging. Beyond a significant financial setback from a fraudulent chargeback, I've faced multiple other difficult living and health problems that have severely impacted my ability to be online and dedicate time to projects. Frankly, continuing to create comprehensive resources like this guide has been a profound struggle amidst these personal difficulties.
+Пишу это откровенно — в последнее время мне пришлось столкнуться с огромными трудностями. Помимо серьёзных финансовых потерь из-за мошеннического возврата платежа, я переживаю множество других проблем, связанных с условиями жизни и здоровьем, что сильно повлияло на мою возможность быть в сети и уделять время проектам. Честно говоря, продолжать создавать столь объёмные ресурсы, как это руководство, — настоящее испытание на фоне личных трудностей.
 
-This is anticipated to be the final major iteration of the main guide. For more experienced users already familiar with fundamental hardware concepts (e.g., the function of an FTDI chip), a concise, minified version will also be made available.
+Ожидается, что это будет последняя крупная версия основного руководства. Для более опытных пользователей, уже знакомых с базовыми аппаратными концепциями (например, с назначением чипа FTDI), будет также доступна сокращённая, упрощённая версия.
 
-If you find this work valuable and are in a position to help, any form of support would be profoundly appreciated. Your generosity enables me to continue contributing to this community despite the ongoing challenges. I sincerely hope this guide has been and continues to be a valuable resource.
+Если вы находите эту работу полезной и можете чем-то помочь — любая поддержка будет глубоко оценена. Ваша щедрость позволяет мне продолжать вносить вклад в это сообщество, несмотря на все сложности. Искренне надеюсь, что это руководство уже оказалось и будет оставаться для вас ценным ресурсом.
 
 ---
 
-## In Memoriam & Dedication
+## Памяти и Посвящение
 
 ![Ross](https://github.com/user-attachments/assets/de7f12fe-8992-4738-a6af-712dc48217ee)
 
-This guide is humbly dedicated to the memory of
-**Ross Freeman (1947–1989)**
+Это руководство с глубоким уважением посвящается памяти
+Росса Фримана (1947–1989)
 
-A visionary engineer, pioneering Michigander, and co-founder of Xilinx, Ross Freeman is widely recognized as the father of Field-Programmable Gate Array (FPGA) technology, which revolutionized computing.
+Выдающегося инженера, новатора из Мичигана и сооснователя компании Xilinx. Росс Фриман широко признан как отец технологии программируемых пользователем вентильных матриц (FPGA), которая произвела революцию в мире вычислений.
 
-In 1984, at a time when the semiconductor industry predominantly focused on fixed-function chips, Freeman dared to imagine a different paradigm: hardware that could be reprogrammed after manufacturing. His revolutionary patent (#4,870,302) and tireless advocacy for reconfigurable computing unlocked a technological paradigm that continues to transform our world four decades later.
+В 1984 году, в эпоху, когда полупроводниковая промышленность была сосредоточена на микросхемах с фиксированной функцией, Фриман осмелился представить себе иную парадигму: аппаратное обеспечение, которое можно перепрограммировать даже после производства. Его революционный патент (#4,870,302) и неустанная пропаганда реконфигурируемых вычислений открыли технологическую эру, которая продолжает менять наш мир вот уже четыре десятилетия.
 
-His groundbreaking innovation enabled the rapid prototyping and deployment of custom silicon solutions without the prohibitive costs of traditional ASIC development, democratizing hardware design and accelerating technological progress across countless domains.
+Его новаторская идея сделала возможным быструю разработку и внедрение специализированных решений на уровне кремния без колоссальных затрат, характерных для традиционного производства ASIC, демократизировала проектирование аппаратного обеспечения и ускорила технологический прогресс в бесчисленных областях.
 
-Today, Freeman's vision powers cutting-edge advancements in artificial intelligence, high-performance computing, telecommunications, automotive systems, aerospace applications, and numerous other fields that were merely dreams during his lifetime.
+Сегодня видение Фримана лежит в основе передовых достижений в области искусственного интеллекта, высокопроизводительных вычислений, телекоммуникаций, автомобильных систем, аэрокосмических технологий и многих других сфер, которые в годы его жизни казались лишь мечтой.
 
-Posthumously inducted into the National Inventors Hall of Fame in 2009, his legacy endures not merely in silicon, but in the spirit of technological audacity that challenges us all to question established limitations and imagine new possibilities.
+В 2009 году он был посмертно введён в Национальный зал славы изобретателей США. Его наследие живёт не только в кремнии, но и в духе технологической смелости, который побуждает нас бросать вызов ограничениям и представлять новые возможности.
 
-*"The ultimate goal of the FPGA was to make programmable logic devices that could replace standard digital chips."* — Ross Freeman
-
----
-
-## **Table of Contents**
-
-### **Part 1: Foundational Concepts**
-
-1.  [Introduction](#1-introduction)
-    *   [1.1 Purpose of the Guide](#11-purpose-of-the-guide)
-    *   [1.2 Target Audience](#12-target-audience)
-    *   [1.3 How to Use This Guide](#13-how-to-use-this-guide)
-2.  [Key Definitions](#2-key-definitions)
-3.  [Device Compatibility](#3-device-compatibility)
-    *   [3.1 Supported FPGA-Based Hardware](#31-supported-fpga-based-hardware)
-    *   [3.2 PCIe Hardware Considerations](#32-pcie-hardware-considerations)
-    *   [3.3 System Requirements](#33-system-requirements)
-4.  [Requirements](#4-requirements)
-    *   [4.1 Hardware](#41-hardware)
-    *   [4.2 Software](#42-software)
-    *   [4.3 Environment Setup](#43-environment-setup)
-5.  [Gathering Donor Device Information](#5-gathering-donor-device-information)
-    *   [5.1 Using Arbor for PCIe Device Scanning](#51-using-arbor-for-pcie-device-scanning)
-    *   [5.2 Extracting and Recording Device Attributes](#52-extracting-and-recording-device-attributes)
-6.  [Initial Firmware Customization](#6-initial-firmware-customization)
-    *   [6.1 Modifying Configuration Space](#61-modifying-configuration-space)
-    *   [6.2 Inserting the Device Serial Number (DSN)](#62-inserting-the-device-serial-number-dsn)
-7.  [Vivado Project Setup and Customization](#7-vivado-project-setup-and-customization)
-    *   [7.1 Generating Vivado Project Files](#71-generating-vivado-project-files)
-    *   [7.2 Modifying IP Blocks](#72-modifying-ip-blocks)
-
-### **Part 2: Intermediate Concepts and Implementation**
-
-8.  [Advanced Firmware Customization](#8-advanced-firmware-customization)
-    *   [8.1 Configuring PCIe Parameters for Emulation](#81-configuring-pcie-parameters-for-emulation)
-    *   [8.2 Adjusting BARs and Memory Mapping](#82-adjusting-bars-and-memory-mapping)
-    *   [8.3 Emulating Device Power Management and Interrupts](#83-emulating-device-power-management-and-interrupts)
-9.  [Emulating Device-Specific Capabilities](#9-emulating-device-specific-capabilities)
-    *   [9.1 Implementing Advanced PCIe Capabilities](#91-implementing-advanced-pcie-capabilities)
-    *   [9.2 Emulating Vendor-Specific Features](#92-emulating-vendor-specific-features)
-10. [Transaction Layer Packet (TLP) Emulation](#10-transaction-layer-packet-tlp-emulation)
-    *   [10.1 Understanding and Capturing TLPs](#101-understanding-and-capturing-tlps)
-    *   [10.2 Crafting Custom TLPs for Specific Operations](#102-crafting-custom-tlps-for-specific-operations)
-
-### **Part 3: Advanced Techniques and Optimization**
-
-11. [Building, Flashing, and Testing](#11-building-flashing-and-testing)
-    *   [11.1 Synthesis and Implementation](#111-synthesis-and-implementation)
-    *   [11.2 Flashing the Bitstream](#112-flashing-the-bitstream)
-    *   [11.3 Testing and Validation](#113-testing-and-validation)
-12. [Advanced Debugging Techniques](#12-advanced-debugging-techniques)
-    *   [12.1 Using Vivado's Integrated Logic Analyzer](#121-using-vivados-integrated-logic-analyzer)
-    *   [12.2 PCIe Traffic Analysis Tools](#122-pcie-traffic-analysis-tools)
-13. [Troubleshooting](#13-troubleshooting)
-    *   [13.1 Device Detection Issues](#131-device-detection-issues)
-    *   [13.2 Memory Mapping and BAR Configuration Errors](#132-memory-mapping-and-bar-configuration-errors)
-    *   [13.3 DMA Performance and TLP Errors](#133-dma-performance-and-tlp-errors)
-14. [Emulation Accuracy and Optimizations](#14-emulation-accuracy-and-optimizations)
-    *   [14.1 Techniques for Accurate Timing Emulation](#141-techniques-for-accurate-timing-emulation)
-    *   [14.2 Dynamic Response to System Calls](#142-dynamic-response-to-system-calls)
-15. [Best Practices for Firmware Development](#15-best-practices-for-firmware-development)
-    *   [15.1 Continuous Testing and Documentation](#151-continuous-testing-and-documentation)
-    *   [15.2 Managing Firmware Versioning](#152-managing-firmware-versioning)
-    *   [15.3 Security Considerations](#153-security-considerations)
-16. [Additional Resources](#16-additional-resources)
-17. [Contact Information](#17-contact-information)
-18. [Support and Contributions](#18-support-and-contributions)
+*"Конечной целью FPGA было создание программируемых логических устройств, способных заменить стандартные цифровые чипы."* — Росс Фриман
 
 ---
 
-## **Part 1: Foundational Concepts**
+## **Содержание**
+
+### **Часть 1: Базовые концепции**
+
+1.  [Вступление](#1-introduction)
+    *   [1.1 Цель руководства](#11-purpose-of-the-guide)
+    *   [1.2 Целевая аудитория](#12-target-audience)
+    *   [1.3 Как использовать руководство](#13-how-to-use-this-guide)
+2.  [Ключевые определения](#2-key-definitions)
+3.  [Совместимость устройств](#3-device-compatibility)
+    *   [3.1 Поддерживаемое оборудование на базе FPGA](#31-supported-fpga-based-hardware)
+    *   [3.2 Особенности оборудования с PCIe](#32-pcie-hardware-considerations)
+    *   [3.3 Системные требования](#33-system-requirements)
+4.  [Требования](#4-requirements)
+    *   [4.1 Аппаратное обеспечение](#41-hardware)
+    *   [4.2 Программное обеспечение](#42-software)
+    *   [4.3 Настройка среды](#43-environment-setup)
+5.  [Сбор информации о донорском устройстве](#5-gathering-donor-device-information)
+    *   [5.1 Использование Arbor для сканирования PCIe-устроств](#51-using-arbor-for-pcie-device-scanning)
+    *   [5.2 Извлечение и фиксация атрибутов устройства](#52-extracting-and-recording-device-attributes)
+6.  [Начальная кастомизация прошивки](#6-initial-firmware-customization)
+    *   [6.1 Изменение конфигурационного пространства](#61-modifying-configuration-space)
+    *   [6.2 Вставка серийного номера устройства (DSN)](#62-inserting-the-device-serial-number-dsn)
+7.  [Настройка и модификация проекта Vivado](#7-vivado-project-setup-and-customization)
+    *   [7.1 Генерация файлов проекта Vivado](#71-generating-vivado-project-files)
+    *   [7.2 Изменение IP-блоков](#72-modifying-ip-blocks)
+
+### **Часть 2: Промежуточные концепции и реализация**
+
+8.  [Продвинутая кастомизация прошивки](#8-advanced-firmware-customization)
+    *   [8.1 Настройка параметров PCIe для эмуляции](#81-configuring-pcie-parameters-for-emulation)
+    *   [8.2 Настройка BAR и отображения памяти](#82-adjusting-bars-and-memory-mapping)
+    *   [8.3 Эмуляция управления питанием устройства и прерываний](#83-emulating-device-power-management-and-interrupts)
+9.  [Эмуляция специфических возможностей устройства](#9-emulating-device-specific-capabilities)
+    *   [9.1 Реализация расширенных возможностей PCIe](#91-implementing-advanced-pcie-capabilities)
+    *   [9.2 Эмуляция функций, специфичных для производителя](#92-emulating-vendor-specific-features)
+10. [Эмуляция пакетов уровня транзакций(TLP)](#10-transaction-layer-packet-tlp-emulation)
+    *   [10.1 Понимание и захват TLP-пакетов](#101-understanding-and-capturing-tlps)
+    *   [10.2 Создание пользовательских TLP для специфических операций](#102-crafting-custom-tlps-for-specific-operations)
+
+### **Часть 3: Продвинутые техники и оптимизация**
+
+11. [Сборка, прошивка и тестирование](#11-building-flashing-and-testing)
+    *   [11.1 Синтез и реализация](#111-synthesis-and-implementation)
+    *   [11.2 Запись битстрима в флеш](#112-flashing-the-bitstream)
+    *   [11.3 Тестирование и валидация](#113-testing-and-validation)
+12. [Продвинутые методы отладки](#12-advanced-debugging-techniques)
+    *   [12.1 Использование интегрированного логического анализатора Vivado](#121-using-vivados-integrated-logic-analyzer)
+    *   [12.2 Инструменты анализа PCIe-трафика](#122-pcie-traffic-analysis-tools)
+13. [Устранение неполадок](#13-troubleshooting)
+    *   [13.1 Проблемы с обнаружением устройства](#131-device-detection-issues)
+    *   [13.2 Ошибки отображения памяти и конфигурации BAR](#132-memory-mapping-and-bar-configuration-errors)
+    *   [13.3 Ошибки производительности DMA и TLP](#133-dma-performance-and-tlp-errors)
+14. [Точность эмуляции и оптимизации](#14-emulation-accuracy-and-optimizations)
+    *   [14.1 Техники для точной эмуляции временных характеристик](#141-techniques-for-accurate-timing-emulation)
+    *   [14.2 Динамическое реагирование на системные вызовы](#142-dynamic-response-to-system-calls)
+15. [Лучшие практики разработки прошивки](#15-best-practices-for-firmware-development)
+    *   [15.1 Непрерывное тестирование и документация](#151-continuous-testing-and-documentation)
+    *   [15.2 Управление версиями прошивки](#152-managing-firmware-versioning)
+    *   [15.3 Вопросы безопасности](#153-security-considerations)
+16. [Дополнительные ресурсы](#16-additional-resources)
+17. [Контактная информация](#17-contact-information)
+18. [Поддержка и вклад в проект](#18-support-and-contributions)
 
 ---
 
-## **1. Introduction**
+## **Часть 1: Базовые концепции**
 
-### **1.1 Purpose of the Guide**
+---
 
-The overarching goal of this guide is to empower you with the knowledge and practical skills to develop custom Direct Memory Access (DMA) firmware for Field-Programmable Gate Array (FPGA)-based devices. This specialized firmware allows your FPGA to accurately emulate the identity and behavior of other PCIe (Peripheral Component Interconnect Express) hardware devices. Such emulation is a powerful technique with profound implications across several advanced domains:
+## **1. Вступление**
 
-**Hardware Security Research**:
-*   **Vulnerability Discovery**: By emulating a device, you can create a controlled environment to send malformed or unexpected data to host drivers, systematically fuzzing for vulnerabilities (e.g., buffer overflows, race conditions) that might be exploitable from a hardware peripheral.
-*   **Driver Analysis**: Observe how operating systems and specific drivers interact with hardware. You can emulate devices with non-standard configurations or undocumented features to understand driver behavior, identify security assumptions, or reverse-engineer proprietary protocols.
-*   **Side-Channel Analysis**: While more complex, an emulated device could potentially be programmed to assist in experiments related to information leakage through timing or power analysis, by precisely controlling peripheral operations.
+### **1.1 Цель руководства**
+
+Основная цель этого руководства — дать вам знания и практические навыки для разработки кастомной прошивки Direct Memory Access (DMA) для FPGA-устройств. Такая специализированная прошивка позволяет вашей FPGA точно эмулировать идентичность и поведение других PCIe (Peripheral Component Interconnect Express) устройств. Эта техника эмуляции открывает мощные возможности и имеет серьёзное значение в нескольких продвинутых областях:
+
+**Исследования аппаратной безопасности:**:
+*   **Поиск уязвимостей**: эмулируя устройство, можно создавать управляемую среду для отправки искажённых или неожиданных данных драйверам, систематически находя уязвимости (например, переполнение буфера, состояния гонки), которые могут быть эксплуатированы через периферийное устройство.
+*   **Анализ драйверов**: наблюдение за взаимодействием ОС и драйверов с аппаратным обеспечением, включая эмуляцию нестандартных или недокументированных функций, помогает понять поведение драйвера и изучить закрытые протоколы.
+*   **Анализ побочных каналов**: эмулированное устройство можно настроить для экспериментов, связанных с утечкой информации через временные задержки или потребление энергии.
 
 **Red Teaming & Penetration Testing**:
 *   **Bypassing Security Measures**: Emulate a seemingly benign or whitelisted hardware device (e.g., a common NIC or storage controller) to gain DMA privileges. Once achieved, this allows direct interaction with system memory, potentially bypassing endpoint detection and response (EDR) systems or anti-malware solutions that operate at higher software layers.
