@@ -210,57 +210,57 @@
     *   **Значение**: Большинство современных PCIe-устройств используют MSI или MSI-X для более эффективного и гибкого управления прерываниями. Точная эмуляция часто требует реализации выбранного механизма прерываний устройства-донора, включая настройку соответствующих структур возможностей MSI/MSI-X и корректную генерацию сообщений прерываний.
 
 *   **DSN (Device Serial Number)**:
-    *   **Определение**: A 64-bit globally unique identifier that can be optionally implemented by a PCIe device. If present, it's typically located in an extended capability structure within the device's Configuration Space.
-    *   **Значение**: While not all devices have a DSN, some drivers or management software might use it for unique identification, licensing, or tracking purposes. Emulating it correctly can be important for full transparency and avoiding detection of the emulated device.
+    *   **Определение**: 64-битный глобально уникальный идентификатор, который может быть опционально реализован в PCIe-устройстве. Если он присутствует, то, как правило, находится в структуре расширенных возможностей в пространстве конфигурации устройства.
+    *   **Значение**: Хотя не все устройства имеют DSN, некоторые драйверы или программное обеспечение могут использовать его для уникальной идентификации, лицензирования или отслеживания устройств. Корректная эмуляция DSN может быть важной для полной прозрачности и избежания обнаружения поддельного устройства.
 
 *   **PCIe Configuration Space**:
-    *   **Определение**: A standardized 256-byte (for Type 0, endpoint devices) or 4KB address region associated with each PCIe function (a device can have multiple functions). This space contains vital information about the device, including its Vendor ID, Device ID, Class Code, Revision ID, BARs, capability pointers, and various status and control registers. It is accessed by the host system using special Configuration Read and Configuration Write TLPs.
-    *   **Значение**: The Configuration Space is the "identity card" of a PCIe device. The very first step in device emulation is to meticulously replicate the relevant parts of the donor device's Configuration Space in your FPGA firmware. The host system uses this information to identify, configure, and allocate resources to the device.
+    *   **Определение**: Стандартизированная область адреса объёмом 256 байт (для устройств типа 0, т.е. endpoint) или 4 КБ, ассоциированная с каждой функцией PCIe-устройства (одно устройство может иметь несколько функций). Это пространство содержит важную информацию об устройстве: Vendor ID, Device ID, Class Code, Revision ID, BAR, указатели на возможности (capability pointers), а также различные управляющие и статусные регистры. Доступ к нему осуществляется хост-системой через специальные TLP пакеты конфигурации (Configuration Read/Write TLP).
+    *   **Значение**: Пространство конфигурации — это «паспорт» PCIe-устройства. Первый шаг в эмуляции устройства — точная репликация соответствующих полей пространства конфигурации устройства-донора в прошивке FPGA. Хост использует эту информацию для идентификации, настройки и распределения ресурсов для устройства.
 
 *   **Donor Device**:
-    *   **Определение**: The physical PCIe hardware device whose identity and behavior you aim to emulate on your FPGA. This device serves as the source for extracting configuration details (Vendor ID, Device ID, BAR settings, capabilities, etc.) and behavioral patterns.
-    *   **Значение**: The fidelity of your emulation directly depends on how accurately and completely you can gather and replicate the characteristics of the donor device.
+    *   **Определение**: Физическое PCIe-устройство, чьё поведение и идентичность вы стремитесь воспроизвести на FPGA. Это устройство служит источником данных для извлечения конфигурационных параметров (Vendor ID, Device ID, BAR и др.) и моделей поведения.
+    *   **Значение**: Точность эмуляции напрямую зависит от того, насколько полно и правильно вы сможете собрать и воспроизвести характеристики устройства-донора.
 
 *   **Root Complex (RC)**:
-    *   **Определение**: The entity in a PCIe hierarchy that connects the CPU and memory subsystem to the PCIe fabric. It generates PCIe transactions on behalf of the CPU and processes transactions initiated by downstream PCIe devices. It also performs the initial bus enumeration and configuration.
-    *   **Значение**: Your emulated device will primarily interact with the Root Complex (or switches connected to it) when communicating with the host system.
+    *   **Определение**: Компонент в иерархии PCIe, соединяющий CPU и подсистему памяти с PCIe-инфраструктурой. Он инициирует PCIe-транзакции от имени CPU и обрабатывает транзакции, инициированные нижестоящими PCIe-устройствами. Root Complex также выполняет начальную инициализацию шины и конфигурацию устройств.
+    *   **Значение**: Ваше эмулируемое устройство будет главным образом взаимодействовать именно с Root Complex (или через PCIe-коммутаторы, если они есть) при передаче данных и управлении по PCIe.
 
 *   **Endpoint (EP)**:
-    *   **Определение**: A type of PCIe device that resides at the periphery of the PCIe fabric, consuming or producing data. Examples include network cards, graphics cards, storage controllers, and the FPGA device you will be programming. Endpoints request resources and initiate transactions to the Root Complex.
-    *   **Значение**: In this guide, your FPGA will be programmed to act as an Endpoint device, emulating a specific donor Endpoint.
+    *   **Определение**: Тип PCIe-устройства, находящийся на периферии PCIe-сети, выполняющий функции потребления или генерации данных. Примеры: сетевые карты, видеокарты, контроллеры хранения и программируемое вами устройство на базе FPGA. Endpoint-звенья запрашивают ресурсы у Root Complex и инициируют транзакции.
+    *   **Значение**: В этом руководстве ваша FPGA будет запрограммирована как устройство типа Endpoint, эмулирующее поведение и конфигурацию конкретного устройства-донора.
 
 *   **HDL (Hardware Description Language)**:
-    *   **Определение**: A specialized computer language used to describe the structure, design, and operation of electronic circuits, particularly digital logic circuits. Common HDLs include Verilog and VHDL.
-    *   **Значение**: You will be working with Verilog (specifically SystemVerilog, an extension of Verilog) within the PCILeech-FPGA project to define the custom logic for your emulated device.
+    *   **Определение**: Специализированный язык программирования, используемый для описания структуры, архитектуры и функционирования электронных схем, в основном цифровых. Наиболее распространённые HDL — это Verilog и VHDL.
+    *   **Значение**: В проекте PCILeech-FPGA вы будете использовать SystemVerilog — расширение языка Verilog — для описания логики работы эмулируемого устройства.
 
 *   **Bitstream**:
-    *   **Определение**: The final configuration file that is loaded onto an FPGA to program its logic blocks and interconnects, thereby implementing your custom hardware design. It's the compiled output from the FPGA development tools (like Xilinx Vivado).
-    *   **Значение**: Generating and flashing the correct bitstream is the ultimate step in deploying your custom firmware onto the FPGA.
+    *   **Определение**: Финальный конфигурационный файл, загружаемый в FPGA. Он описывает, как настроить логические блоки и соединения внутри чипа для реализации вашей схемы. Bitstream создаётся в процессе компиляции проекта средствами разработки для FPGA, такими как Xilinx Vivado.
+    *   **Значение**: Генерация и прошивка корректного bitstream-файла — заключительный шаг в развертывании вашей прошивки на FPGA. От этого зависит, как именно устройство будет восприниматься и работать в PCIe-системе.
 
 ---
 
-## **3. Device Compatibility**
+## **3. Совместимость устройств**
 
-Achieving successful and accurate PCIe device emulation hinges on ensuring your chosen FPGA-based hardware and host system configuration are fully compatible. This section details the supported FPGA platforms, critical PCIe hardware considerations, and the necessary system requirements to set up your development environment.
+Достижение успешной и точной эмуляции PCIe-устройства на базе FPGA требует полной совместимости выбранного оборудования и конфигурации хост-системы. В этом разделе рассматриваются поддерживаемые платформы FPGA, ключевые аппаратные особенности PCIe и системные требования, необходимые для настройки вашей среды разработки.
 
-### **3.1 Supported FPGA-Based Hardware**
+### **3.1 Поддерживаемое оборудование на базе FPGA**
 
-While this guide provides a generic methodology adaptable to various FPGA-based DMA hardware, our primary examples and specific instructions will focus on **Xilinx 7-series FPGAs**, commonly found in open-source DMA boards due to their balance of performance and accessibility. The **Squirrel DMA (35T)** card is highlighted due to its popularity and well-documented compatibility with the PCILeech-FPGA framework.
+Хотя в данном руководстве изложена универсальная методология, применимая к различным FPGA-устройствам с поддержкой DMA, основное внимание уделяется FPGA Xilinx 7-серии, которые часто используются в open-source DMA-платах благодаря хорошему балансу между производительностью и доступностью. Особенно выделяется плата Squirrel DMA (35T), поскольку она популярна и хорошо документирована в рамках проекта PCILeech-FPGA.
 
-The core principles and techniques for customizing the PCIe IP core and developing hardware description language (HDL) logic are broadly applicable to the following FPGA families and specific boards:
+Базовые принципы настройки PCIe IP-ядер и разработки логики на HDL подходят для следующих FPGA-семейств и плат:
 
 *   **Squirrel (Artix-7 35T)**
-    *   **Description**: A widely available and cost-effective FPGA-based DMA device featuring the Xilinx Artix-7 35T FPGA. It offers sufficient logic resources and memory for standard memory acquisition tasks and a wide range of basic to intermediate device emulation projects. It's an excellent starting point for those new to FPGA-based DMA.
-    *   **Key Features**: Artix-7 offers a good performance-to-cost ratio, making it suitable for educational and research purposes.
+    *   **Описание**: Доступная и недорогая плата с FPGA Xilinx Artix-7 35T, идеально подходящая для задач извлечения памяти и базовой/средней эмуляции устройств. Отличный выбор для новичков.
+    *   **Ключевые особенности**: Хорошее соотношение цена/производительность, достаточные ресурсы логики для образовательных целей и исследований.
 *   **Enigma-X1 (Artix-7 75T)**
-    *   **Description**: A mid-tier FPGA offering enhanced logic and memory resources compared to the 35T, typically based on the Xilinx Artix-7 75T FPGA. This provides greater flexibility for more complex emulation scenarios, larger memory-mapped regions, or more intricate DMA operations that require additional FPGA fabric.
-    *   **Key Features**: Increased logic cells and Block RAM (BRAM) enable more sophisticated designs.
+    *   **Описание**: Средний уровень – основана на FPGA Artix-7 75T. Предоставляет больше логических ресурсов и памяти, что делает её подходящей для более сложной эмуляции и расширенного взаимодействия с хостом.
+    *   **Ключевые особенности**: Увеличенное количество логических ячеек и блоков RAM (BRAM) для реализации более сложных дизайнов.
 *   **ZDMA (Artix-7 100T)**
-    *   **Description**: A higher-performance Artix-7 100T-based FPGA, optimized for more demanding memory interactions and extensive reads/writes. This board is suitable for large-scale DMA solutions, high-throughput emulation, or projects that require significant on-chip memory.
-    *   **Key Features**: The 100T variant provides a substantial upgrade in resources, ideal for pushing the boundaries of emulation.
+    *   **Описание**: Плата с повышенной производительностью на базе Artix-7 100T, оптимизированная для интенсивной работы с памятью и высокоскоростного DMA. Подходит для масштабных проектов и нагрузок.
+    *   **Ключевые особенности**: Существенное увеличение ресурсов логики и памяти для сложных решений.
 *   **Kintex-7 (K325T, K410T, etc.)**
-    *   **Description**: Representing an advanced tier, Kintex-7 FPGAs (e.g., K325T, K410T) offer robust capabilities for highly complex projects, large-scale DMA solutions, and applications requiring higher PCIe lane counts or speeds (e.g., Gen3 x8/x16). While more expensive, they provide significantly more logic, DSP slices, and memory, enabling the emulation of highly sophisticated and demanding donor devices.
-    *   **Key Features**: High-performance transceivers for faster PCIe generations, abundant logic and memory resources for complex designs.
+    *   **Описание**: Продвинутые платы на базе семейства Kintex-7, предназначенные для высокопроизводительных и сложных задач: эмуляция крупных устройств, работа по PCIe Gen3 x8/x16, и пр. Более дорогие, но значительно превосходят Artix-7 по ресурсам.
+    *   **Ключевые особенности**: Высокоскоростные трансиверы, огромное количество логики и встроенной памяти, поддержка расширенного PCIe.
 
 **Important Note on FPGA Families**: While the principles are similar, specific IP core configurations and clocking structures may vary slightly between different Xilinx 7-series FPGAs (Artix-7, Kintex-7, Zynq-7000 PS/PL). Always refer to the specific board's documentation and the Xilinx PCIe IP Core user guides for your chosen FPGA family. The PCILeech-FPGA project often provides board-specific Tcl scripts and source files to simplify this process.
 
