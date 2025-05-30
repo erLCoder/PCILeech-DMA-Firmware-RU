@@ -262,92 +262,94 @@
     *   **Описание**: Продвинутые платы на базе семейства Kintex-7, предназначенные для высокопроизводительных и сложных задач: эмуляция крупных устройств, работа по PCIe Gen3 x8/x16, и пр. Более дорогие, но значительно превосходят Artix-7 по ресурсам.
     *   **Ключевые особенности**: Высокоскоростные трансиверы, огромное количество логики и встроенной памяти, поддержка расширенного PCIe.
 
-**Important Note on FPGA Families**: While the principles are similar, specific IP core configurations and clocking structures may vary slightly between different Xilinx 7-series FPGAs (Artix-7, Kintex-7, Zynq-7000 PS/PL). Always refer to the specific board's documentation and the Xilinx PCIe IP Core user guides for your chosen FPGA family. The PCILeech-FPGA project often provides board-specific Tcl scripts and source files to simplify this process.
+**Важное примечание о семействе FPGA**: Хотя общие принципы настройки одинаковы, конкретные конфигурации IP-ядер и структура тактирования могут незначительно различаться между различными FPGA Xilinx 7-серии — такими как Artix-7, Kintex-7 и Zynq-7000 (PS/PL). Всегда обращайтесь к документации именно той платы, которую вы используете, а также к официальным руководствам пользователя на IP-ядро PCIe от Xilinx, соответствующим вашему семейству FPGA.
 
-### **3.2 PCIe Hardware Considerations**
+Проект PCILeech-FPGA часто предоставляет специализированные Tcl-скрипты и исходные файлы для конкретных плат, что упрощает настройку и уменьшает риск ошибок при сборке проекта.
 
-To ensure smooth and unrestricted operation of your FPGA-based DMA device for emulation, several PCIe-specific and host system features require careful consideration and, in some cases, modification.
+### **3.2 Особенности оборудования с PCIe**
+
+Для корректной и неограниченной работы FPGA-устройства с поддержкой DMA, предназначенного для эмуляции PCIe-устройств, необходимо учитывать и при необходимости модифицировать ряд настроек как на уровне BIOS/UEFI, так и в операционной системе.
 
 *   **IOMMU / VT-d / AMD-Vi Settings**
-    *   **Recommendation**: For initial setup and testing, it is **highly recommended to disable IOMMU (Intel's Virtualization Technology for Directed I/O - VT-d) or AMD's equivalent (AMD-Vi)** in your system's BIOS/UEFI settings.
-    *   **Rationale**: IOMMUs are hardware components that provide memory management units for DMA-capable devices. They perform address translation, similar to a CPU's MMU, and can enforce memory access permissions. While crucial for security and virtualization (preventing a rogue device from accessing unauthorized memory regions), they *will* restrict your DMA device's access to system memory, potentially interfering with memory acquisition and device emulation. Disabling the IOMMU allows your DMA device unrestricted access, which is often necessary for advanced emulation and security research purposes.
-    *   **Location**: Typically found under "CPU Configuration," "Virtualization," "Advanced Settings," or "I/O Virtualization" in your BIOS/UEFI.
-*   **Kernel DMA Protection (Windows) / Thunderbolt Security Level (Linux)**
-    *   **Recommendation (Windows)**: Disable **Kernel DMA Protection** features in modern Windows systems. This includes settings like **Virtualization-Based Security (VBS)** and **Memory Integrity (HVCI)**. These features leverage the IOMMU to prevent unauthorized DMA attacks from external peripherals connected via Thunderbolt or PCIe.
-    *   **Steps (Windows)**:
-        *   Access Windows Security settings: **Start > Settings > Privacy & security > Windows Security > Device security**.
-        *   Under "Core isolation," click "Core isolation details."
-        *   Turn off "Memory integrity."
-        *   You may also need to disable Secure Boot in BIOS/UEFI, as VBS often depends on it.
-        *   **Caution**: Disabling these features significantly **reduces your system's security posture**, making it vulnerable to various attacks, including those involving malicious DMA devices. This should only be done on a dedicated test system, not on your primary machine, and in a secure, isolated environment where you understand the risks.
-    *   **Recommendation (Linux/Thunderbolt)**: If using a system with Thunderbolt ports, understand and potentially adjust the **Thunderbolt Security Level** in your BIOS/UEFI. Lower security levels (e.g., "No Security," "User Authorization") are generally required for arbitrary Thunderbolt/PCIe devices to perform DMA without explicit host approval.
-*   **PCIe Slot Requirements**
-    *   **Recommendation**: Use a compatible PCIe slot that physically matches the FPGA device's requirements. Most Artix-7-based DMA cards operate at PCIe Gen2 x1 or x4.
-    *   **Rationale**:
-        *   **Physical Fit**: An x1 card can fit into x1, x4, x8, or x16 slots, but an x4 card requires at least an x4 slot.
-        *   **Performance**: While an x4 card *might* work in an x1 slot (if the physical connector is open-ended or modified), it will operate at the x1 speed, severely limiting data transfer rates. For optimal performance and accurate emulation of a donor device's capabilities, ensure the FPGA board is installed in a slot that provides at least the *emulated* link width and speed (e.g., if you're emulating a Gen2 x4 device, use a Gen2 x4 slot on the host).
-    *   **Motherboard BIOS Settings**: Some motherboards allow configuration of PCIe slot speeds (e.g., forcing Gen1 or Gen2). Ensure these settings do not conflict with your desired emulation speed.
+    *   **Рекомендация**: На этапе первичной настройки и отладки настоятельно рекомендуется отключить IOMMU (технология Intel VT-d или AMD-Vi) в BIOS/UEFI.
+    *   **Причина**: IOMMU (Input-Output Memory Management Unit) ограничивает доступ DMA-устройств к памяти, используя механизм адресной трансляции и защиты, аналогичный MMU у CPU. Это повышает безопасность — но одновременно блокирует прямой доступ к памяти, необходимый для анализа ОЗУ и корректной эмуляции устройств.
+    *   **Где искать**: Обычно находится в BIOS/UEFI по пути: Advanced Settings → CPU Configuration, Virtualization, или I/O Virtualization. Отключите опции вроде VT-d, IOMMU, AMD-Vi.
+*   **Защита от DMA (Windows) / Уровень безопасности Thunderbolt (Linux)**
+    *   **Рекомендации для Windows**: Отключите **Kernel DMA Protection** в современных версиях Windows. Это включает параметры, такие как **Virtualization-Based Security (VBS)** и **Memory Integrity (HVCI)**. Эти функции используют IOMMU для предотвращения несанкционированных DMA-атак со стороны внешних устройств, подключённых через Thunderbolt или PCIe.
+    *   **Шаги (Windows)**:
+        *   Откройте параметры безопасности Windows: **Пуск > Параметры > Конфидециальность и безопасность > Безопасность Windows > Безопасность устройства**.
+        *   В разделе "Core isolation(Изоляция ядра)," нажмите "Core isolation details.(Подробности изоляции ядра)"
+        *   Отключите "Memory integrity.(Целостность памяти)"
+        *   Возможно, потребуется отключить Secure Boot в BIOS/UEFI, так как VBS часто зависит от этой функции.
+        *   **Внимание**: Отключение этих функций значительно **снижает уровень безопасности вашей системы**, делая её уязвимой для различных атак, включая атаки с использованием вредоносных DMA-устройств. Это следует делать только на отдельной тестовой системе, а не на основном компьютере, и только в безопасной, изолированной среде при полном понимании возможных рисков.
+    *   **Рекомендации  (Linux/Thunderbolt)**: Если вы используете систему с портами Thunderbolt, изучите и при необходимости измените **Thunderbolt Security Level(уровень безопасности Thunderbolt)** в BIOS/UEFI. Более низкие уровни безопасности (например, "Безопасность отключена", "Авторизация пользователя") обычно требуются для того, чтобы произвольные устройства Thunderbolt/PCIe могли выполнять DMA без явного разрешения со стороны хоста.
+*   **Требования к PCIe-слоту**
+    *   **Рекомендации**: Используйте совместимый PCIe-слот, который физически соответствует требованиям FPGA-устройства. Большинство карт DMA на базе Artix-7 работают с PCIe Gen2 x1 или x4.
+    *   **Обоснование**:
+        *   **Физическая совместимость**: Карта x1 может быть установлена в слот x1, x4, x8 или x16, но карта x4 требует как минимум слот x4.
+        *   **Производительность**: Хотя карта x4 может работать в слоте x1 (если разъём физически открыт или модифицирован), она будет функционировать на скорости x1, что значительно ограничит скорость передачи данных. Для оптимальной производительности и точной эмуляции возможностей устройства-донора убедитесь, что плата FPGA установлена в слот, обеспечивающий как минимум эмулируемую ширину канала и скорость (например, если вы эмулируете устройство Gen2 x4, используйте слот Gen2 x4 на хост-системе).
+    *   **Настройки BIOS материнской платы**: Некоторые материнские платы позволяют настраивать скорость работы PCIe-слотов (например, принудительно установить Gen1 или Gen2). Убедитесь, что эти настройки не противоречат желаемой скорости эмуляции.
 
-### **3.3 System Requirements**
+### **3.3 Системные требования**
 
-Setting up a robust development environment is key for efficient firmware development, synthesis, and debugging.
+Настройка надёжной среды разработки является ключом к эффективной разработке прошивок, синтезу и отладке.
 
-*   **Host System**
-    *   **Processor**: A modern multi-core CPU is essential for running FPGA development tools like Vivado, which are computationally intensive during synthesis and implementation. (e.g., Intel Core i5/i7/i9 or AMD Ryzen 5/7/9 equivalent, 8th generation or newer recommended).
-    *   **Memory (RAM)**: Minimum 16 GB RAM is strongly recommended; **32 GB or more is ideal** for complex FPGA designs, as Vivado can consume significant memory, especially during implementation.
-    *   **Storage**: A Solid-State Drive (SSD) with at least **200 GB of free space** is crucial. FPGA tool installations (Vivado alone can be 50+ GB), project files, and synthesis/implementation outputs can quickly consume disk space. The speed of an SSD dramatically reduces build times.
-    *   **Operating System**:
-        *   **Windows 10/11 (64-bit Professional or Enterprise edition)**: Widely supported by Xilinx Vivado and many hardware debugging tools. Remember the Kernel DMA Protection considerations.
-        *   **Compatible Linux Distribution (64-bit)**: Ubuntu LTS (Long Term Support) releases (e.g., 20.04, 22.04) are commonly used and well-supported for Vivado. Linux often provides a more flexible environment for scripting and low-level PCIe interaction tools.
-*   **Peripheral Devices**
-    *   **JTAG Programmer**: Absolutely necessary for flashing the compiled bitstream onto your FPGA-based DMA card. Examples include Xilinx Platform Cable USB II, Digilent JTAG-HS3, or integrated JTAG programmers found on some development boards. Ensure it's compatible with your FPGA board and Vivado.
-    *   **PCIe Slot**: As discussed in Section 3.2, ensure your host system has an available and compatible PCIe slot for your DMA card.
-    *   **USB Port**: For connecting the JTAG programmer and potentially for a UART/serial console to your FPGA board for debug output.
+*   **Хост-система**
+    *   **Процессор**: Современный многоядерный процессор необходим для запуска инструментов разработки FPGA, таких как Vivado, которые требуют значительных вычислительных ресурсов при синтезе и реализации. (например, Intel Core i5/i7/i9 или AMD Ryzen 5/7/9, 8-го поколения или новее рекомендуется).
+    *   **Оперативная память (RAM)**: Минимум 16 ГБ настоятельно рекомендуется; 32 ГБ или больше — идеально для сложных FPGA-проектов, так как Vivado может потреблять большое количество памяти, особенно на этапе реализации.
+    *   **Хранение данных**: Твердотельный накопитель (SSD) с минимум **200 GB свободного места** крайне важен. Установка инструментов FPGA (только Vivado может занимать более 50 ГБ), проектные файлы и выходные данные синтеза/реализации быстро заполняют диск. Скорость SSD значительно сокращает время сборки.
+    *   **Операционная система**:
+        *   **Windows 10/11 (64-bit Professional or Enterprise edition)**: Широко поддерживается Xilinx Vivado и многими аппаратными отладочными инструментами. Не забудьте о мерах предосторожности, связанных с защитой от DMA.
+        *   **Совместимый дистрибутив Linux (64-бит)**: Часто используются и хорошо поддерживаются релизы Ubuntu LTS (например, 20.04, 22.04) для работы с Vivado. Linux часто предоставляет более гибкую среду для написания скриптов и взаимодействия с PCIe на низком уровне.
+*   **Периферийные устройства**
+    *   **Программатор JTAG**: Абсолютно необходим для прошивки скомпилированного битстрима в вашу карту DMA на основе FPGA. Примеры: Xilinx Platform Cable USB II, Digilent JTAG-HS3 или встроенные JTAG-программаторы, присутствующие на некоторых отладочных платах. Убедитесь, что он совместим с вашей FPGA-платой и Vivado.
+    *   **Слот PCIe**: Как обсуждалось в разделе 3.2, убедитесь, что в вашей хост-системе есть доступный и совместимый слот PCIe для вашей карты DMA.
+    *   **Порт USB**: Для подключения JTAG-программатора и, возможно, UART/последовательной консоли к вашей плате FPGA для вывода отладочной информации.
 
 ---
 
-## **4. Requirements**
+## **4. Требования**
 
-This section outlines the essential hardware and software components, along with the recommended environment setup, necessary to embark on custom firmware development for PCIe device emulation. Having these prerequisites in place before you begin will streamline your development process.
+Этот раздел описывает основные аппаратные и программные компоненты, а также рекомендуемую настройку среды, необходимые для начала разработки пользовательской прошивки для эмуляции PCIe-устройств. Наличие этих предварительных условий до начала работы значительно упростит процесс разработки.
 
-### **4.1 Hardware**
+### **4.1 Аппаратное обеспечение**
 
-*   **Donor PCIe Device**
-    *   **Purpose**: This is the physical hardware device whose configuration and behavior you intend to emulate on your FPGA. It serves as the authoritative source for critical identification details, register values, and operational characteristics.
-    *   **Examples**: Common examples include a standard Network Interface Card (NIC), a SATA or NVMe storage controller, a USB controller, or any other generic PCIe expansion card that you can safely remove from a system for analysis. It is highly recommended to use a device that is *not* essential for the system's operation, as you will be inspecting its low-level configuration.
+*   **Донор-устройство PCIe**
+    *   **Назначение**: Это физическое аппаратное устройство, чью конфигурацию и поведение вы намерены эмулировать на FPGA. Оно служит авторитетным источником для критически важных идентификаторов, значений регистров и рабочих характеристик.
+    *   **Примеры**: Распространённые примеры включают стандартную сетевую карту (NIC), контроллеры хранения SATA или NVMe, USB-контроллер или любую другую PCIe-карту расширения, которую можно безопасно извлечь из системы для анализа. Настоятельно рекомендуется использовать устройство, не являющееся критически важным для функционирования системы, поскольку вы будете исследовать его на низком уровне.
 *   **DMA FPGA Card**
-    *   **Description**: An FPGA-based development board specifically designed or adapted to perform Direct Memory Access (DMA) operations over a PCIe interface. This is the platform onto which your custom firmware will be loaded.
-    *   **Examples**: As detailed in Section 3.1, compatible cards include the **Squirrel (Artix-7 35T)**, **Enigma-X1 (Artix-7 75T)**, **ZDMA (Artix-7 100T)**, or various **Kintex-7** based solutions. Ensure your chosen card has a PCIe edge connector.
+    *   **Описание**: Отладочная плата на базе FPGA, специально разработанная или адаптированная для выполнения операций прямого доступа к памяти (DMA) через интерфейс PCIe. Именно на эту платформу будет загружена ваша пользовательская прошивка.
+    *   **Примеры**: Как описано в разделе 3.1, совместимые платы включают Squirrel (Artix-7 35T), Enigma-X1 (Artix-7 75T), ZDMA (Artix-7 100T) или различные решения на базе Kintex-7. Убедитесь, что выбранная плата оснащена разъёмом PCIe.
 *   **JTAG Programmer**
-    *   **Purpose**: This crucial tool facilitates the communication between your development PC and the FPGA on your DMA card. It's used to program (flash) the compiled bitstream onto the FPGA and, importantly, for interactive debugging using tools like Vivado's Hardware Manager and Integrated Logic Analyzer (ILA).
-    *   **Examples**:
-        *   **Xilinx Platform Cable USB II**: A traditional, widely compatible programmer for Xilinx FPGAs. Ensure you have the necessary drivers installed.
-        *   **Digilent JTAG-HS3 / JTAG-HS2**: Popular and reliable programmers known for good Vivado integration and support. The HS3 offers faster programming speeds.
-        *   **Integrated JTAG**: Some FPGA boards may have an onboard USB-to-JTAG bridge (e.g., a FTDI chip) which eliminates the need for a separate programmer. Consult your board's documentation.
+    *   **Назначение**: Этот важный инструмент обеспечивает связь между вашим ПК и FPGA на плате DMA. Используется для прошивки (записи) скомпилированного bitstream-файла в FPGA, а также для интерактивной отладки с помощью таких инструментов, как Vivado Hardware Manager и Integrated Logic Analyzer (ILA).
+    *   **Примеры**:
+        *   **Xilinx Platform Cable USB II**: Традиционный и широко совместимый программатор для FPGA от Xilinx. Убедитесь, что установлены необходимые драйверы.
+        *   **Digilent JTAG-HS3 / JTAG-HS2**: Популярные и надёжные программаторы, известные хорошей интеграцией с Vivado. HS3 обеспечивает более высокую скорость прошивки.
+        *   **Integrated JTAG**: Некоторые платы FPGA могут иметь встроенный USB-to-JTAG мост (например, на базе чипа FTDI), что исключает необходимость в отдельном программаторе. Обратитесь к документации вашей платы.
 
-### **4.2 Software**
+### **4.2 Программное обеспечение**
 
 *   **Xilinx Vivado Design Suite**
-    *   **Description**: The official, comprehensive FPGA development environment from Xilinx (now AMD). Vivado is essential for synthesizing your HDL code, implementing the design onto the target FPGA, generating the final bitstream, and performing hardware debugging. It includes the necessary IP cores, compilers, and utilities.
-    *   **Download**: Visit the official Xilinx (AMD) downloads page: [https://www.xilinx.com/support/download.html](https://www.xilinx.com/support/download.html).
-    *   **Version Note**: While older versions like Vivado 2020.1 might be referenced in some legacy guides, it is strongly recommended to download a **recent stable version** (e.g., Vivado 2023.x or later) compatible with your target FPGA family (Artix-7, Kintex-7). The PCILeech-FPGA project generally supports newer Vivado versions.
+    *   **Описание**: The official, comprehensive FPGA development environment from Xilinx (now AMD). Vivado is essential for synthesizing your HDL code, implementing the design onto the target FPGA, generating the final bitstream, and performing hardware debugging. It includes the necessary IP cores, compilers, and utilities.
+    *   **Скачать**: Visit the official Xilinx (AMD) downloads page: [https://www.xilinx.com/support/download.html](https://www.xilinx.com/support/download.html).
+    *   **Примечание по версии**: While older versions like Vivado 2020.1 might be referenced in some legacy guides, it is strongly recommended to download a **recent stable version** (e.g., Vivado 2023.x or later) compatible with your target FPGA family (Artix-7, Kintex-7). The PCILeech-FPGA project generally supports newer Vivado versions.
 *   **Visual Studio Code**
-    *   **Description**: A highly customizable and feature-rich code editor from Microsoft. It's an excellent choice for writing and editing your Verilog/SystemVerilog HDL code due to its extensive extension ecosystem, offering features like syntax highlighting, linting, auto-completion, and version control integration.
-    *   **Download**: [https://code.visualstudio.com/](https://code.visualstudio.com/)
+    *   **Описание**: A highly customizable and feature-rich code editor from Microsoft. It's an excellent choice for writing and editing your Verilog/SystemVerilog HDL code due to its extensive extension ecosystem, offering features like syntax highlighting, linting, auto-completion, and version control integration.
+    *   **Скачать**: [https://code.visualstudio.com/](https://code.visualstudio.com/)
 *   **PCILeech-FPGA**
-    *   **Description**: An open-source framework and base code repository for FPGA-based DMA development. It provides ready-to-use PCIe IP core instantiations and a well-structured project that serves as an excellent starting point for custom firmware. This guide heavily leverages its architecture.
-    *   **Repository**: [https://github.com/ufrisk/pcileech-fpga](https://github.com/ufrisk/pcileech-fpga)
+    *   **Описание**: An open-source framework and base code repository for FPGA-based DMA development. It provides ready-to-use PCIe IP core instantiations and a well-structured project that serves as an excellent starting point for custom firmware. This guide heavily leverages its architecture.
+    *   **Репозиторий**: [https://github.com/ufrisk/pcileech-fpga](https://github.com/ufrisk/pcileech-fpga)
 *   **Arbor (MindShare)**
-    *   **Description**: A powerful and user-friendly software tool specifically designed for in-depth scanning and analysis of PCIe devices. It provides detailed insights into the configuration space, capabilities, and registers of connected PCIe hardware, making it invaluable for gathering donor device information.
-    *   **Download**: Available from the MindShare website: [https://www.mindshare.com/](https://www.mindshare.com/) (You will likely need to navigate to their software section).
-    *   **Note**: Typically requires account creation and may offer a time-limited trial.
+    *   **Описание**: A powerful and user-friendly software tool specifically designed for in-depth scanning and analysis of PCIe devices. It provides detailed insights into the configuration space, capabilities, and registers of connected PCIe hardware, making it invaluable for gathering donor device information.
+    *   **Скачать**: Available from the MindShare website: [https://www.mindshare.com/](https://www.mindshare.com/) (You will likely need to navigate to their software section).
+    *   **Примечание**: Typically requires account creation and may offer a time-limited trial.
 *   **Alternative PCIe Device Analysis Tools**
     *   **Telescan PE (Teledyne LeCroy)**:
-        *   **Description**: A no-cost utility from Teledyne LeCroy for PCIe traffic analysis and device enumeration. While it's primarily a software tool that interfaces with their hardware protocol analyzers, it can also provide some basic configuration space views without dedicated hardware.
-        *   **Download**: [https://www.teledynelecroy.com/protocolanalyzer/pci-express/telescan-pe-software/resources/analysis-software](https://www.teledynelecroy.com/protocolanalyzer/pci-express/telescan-pe-software/resources/analysis-software)
-        *   **Note**: Requires manual registration and approval for download.
-    *   **OS-Native Tools (For basic checks)**:
-        *   **Windows Device Manager**: Provides basic Vendor ID, Device ID, Subsystem ID, and Class Code information under the "Details" tab of a device's properties.
+        *   **Описание**: A no-cost utility from Teledyne LeCroy for PCIe traffic analysis and device enumeration. While it's primarily a software tool that interfaces with their hardware protocol analyzers, it can also provide some basic configuration space views without dedicated hardware.
+        *   **Скачать**: [https://www.teledynelecroy.com/protocolanalyzer/pci-express/telescan-pe-software/resources/analysis-software](https://www.teledynelecroy.com/protocolanalyzer/pci-express/telescan-pe-software/resources/analysis-software)
+        *   **Примечание**: Requires manual registration and approval for download.
+    *   **Встроенные средства ОС (для базовой проверки)**:
+        *   **Диспетчер устройств Windows**: Provides basic Vendor ID, Device ID, Subsystem ID, and Class Code information under the "Details" tab of a device's properties.
         *   **Linux `lspci` utility**: A powerful command-line tool for inspecting PCIe devices. Use `lspci -nn` for Vendor/Device IDs, `lspci -vvv` for verbose details including BARs and capabilities, and `lspci -s <BUS:DEV.FUN> -xxxx` for raw configuration space dumps.
 
 ### **4.3 Environment Setup**
