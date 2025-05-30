@@ -330,27 +330,27 @@
 ### **4.2 Программное обеспечение**
 
 *   **Xilinx Vivado Design Suite**
-    *   **Описание**: The official, comprehensive FPGA development environment from Xilinx (now AMD). Vivado is essential for synthesizing your HDL code, implementing the design onto the target FPGA, generating the final bitstream, and performing hardware debugging. It includes the necessary IP cores, compilers, and utilities.
-    *   **Скачать**: Visit the official Xilinx (AMD) downloads page: [https://www.xilinx.com/support/download.html](https://www.xilinx.com/support/download.html).
-    *   **Примечание по версии**: While older versions like Vivado 2020.1 might be referenced in some legacy guides, it is strongly recommended to download a **recent stable version** (e.g., Vivado 2023.x or later) compatible with your target FPGA family (Artix-7, Kintex-7). The PCILeech-FPGA project generally supports newer Vivado versions.
+    *   **Описание**: Официальная, комплексная среда разработки FPGA от Xilinx (ныне AMD). Vivado необходим для синтеза HDL-кода, реализации проекта на целевой FPGA, генерации итогового bitstream и отладки аппаратуры. В комплект входят необходимые IP-ядер, компиляторы и утилиты.
+    *   **Скачать**: Посетите официальную страницу загрузок Xilinx (AMD):: [https://www.xilinx.com/support/download.html](https://www.xilinx.com/support/download.html).
+    *   **Примечание по версии**: Хотя в некоторых старых руководствах может упоминаться Vivado 2020.1, настоятельно рекомендуется скачать **актуальную стабильную версию** (например, Vivado 2023.x или новее), совместимую с вашей целевой FPGA-семейством (Artix-7, Kintex-7). Проект PCILeech-FPGA обычно поддерживает новые версии Vivado.
 *   **Visual Studio Code**
-    *   **Описание**: A highly customizable and feature-rich code editor from Microsoft. It's an excellent choice for writing and editing your Verilog/SystemVerilog HDL code due to its extensive extension ecosystem, offering features like syntax highlighting, linting, auto-completion, and version control integration.
+    *   **Описание**: Высоко настраиваемый и функционально насыщенный редактор кода от Microsoft. Отличный выбор для написания и редактирования HDL-кода на Verilog/SystemVerilog благодаря обширной экосистеме расширений с поддержкой подсветки синтаксиса, линтинга, автозаполнения и интеграции с системами контроля версий.
     *   **Скачать**: [https://code.visualstudio.com/](https://code.visualstudio.com/)
 *   **PCILeech-FPGA**
-    *   **Описание**: An open-source framework and base code repository for FPGA-based DMA development. It provides ready-to-use PCIe IP core instantiations and a well-structured project that serves as an excellent starting point for custom firmware. This guide heavily leverages its architecture.
+    *   **Описание**: Открытая платформа и репозиторий исходного кода для разработки DMA на FPGA. Предоставляет готовые к использованию PCIe IP-ядер и хорошо структурированный проект, который служит отличной отправной точкой для создания пользовательской прошивки. Это руководство во многом опирается на архитектуру PCILeech-FPGA.
     *   **Репозиторий**: [https://github.com/ufrisk/pcileech-fpga](https://github.com/ufrisk/pcileech-fpga)
 *   **Arbor (MindShare)**
-    *   **Описание**: A powerful and user-friendly software tool specifically designed for in-depth scanning and analysis of PCIe devices. It provides detailed insights into the configuration space, capabilities, and registers of connected PCIe hardware, making it invaluable for gathering donor device information.
-    *   **Скачать**: Available from the MindShare website: [https://www.mindshare.com/](https://www.mindshare.com/) (You will likely need to navigate to their software section).
-    *   **Примечание**: Typically requires account creation and may offer a time-limited trial.
-*   **Alternative PCIe Device Analysis Tools**
+    *   **Описание**: Мощный и удобный программный инструмент для глубокой диагностики и анализа PCIe-устройств. Предоставляет детальные сведения о конфигурационном пространстве, возможностях и регистрах подключенного PCIe-оборудования, что делает его незаменимым для сбора информации о донорском устройстве.
+    *   **Скачать**: Доступен на сайте MindShare: [https://www.mindshare.com/](https://www.mindshare.com/) (вероятно, нужно перейти в раздел программного обеспечения).
+    *   **Примечание**: Обычно требуется регистрация аккаунта и возможно предоставляется ограниченный по времени пробный период.
+*   **Альтернативные инструменты анализа PCIe-устройств**
     *   **Telescan PE (Teledyne LeCroy)**:
-        *   **Описание**: A no-cost utility from Teledyne LeCroy for PCIe traffic analysis and device enumeration. While it's primarily a software tool that interfaces with their hardware protocol analyzers, it can also provide some basic configuration space views without dedicated hardware.
+        *   **Описание**: Бесплатная утилита от Teledyne LeCroy для анализа трафика PCIe и перечисления устройств. Хотя это в первую очередь программный продукт для работы с их аппаратными анализаторами протокола, он также может предоставить базовые сведения о конфигурационном пространстве без специализированного оборудования.
         *   **Скачать**: [https://www.teledynelecroy.com/protocolanalyzer/pci-express/telescan-pe-software/resources/analysis-software](https://www.teledynelecroy.com/protocolanalyzer/pci-express/telescan-pe-software/resources/analysis-software)
-        *   **Примечание**: Requires manual registration and approval for download.
+        *   **Примечание**: Требуется ручная регистрация и одобрение для загрузки.
     *   **Встроенные средства ОС (для базовой проверки)**:
-        *   **Диспетчер устройств Windows**: Provides basic Vendor ID, Device ID, Subsystem ID, and Class Code information under the "Details" tab of a device's properties.
-        *   **Linux `lspci` utility**: A powerful command-line tool for inspecting PCIe devices. Use `lspci -nn` for Vendor/Device IDs, `lspci -vvv` for verbose details including BARs and capabilities, and `lspci -s <BUS:DEV.FUN> -xxxx` for raw configuration space dumps.
+        *   **Диспетчер устройств Windows**: Предоставляет базовые сведения о Vendor ID, Device ID, Subsystem ID и Class Code во вкладке «Сведения» в свойствах устройства.
+        *   **Linux `lspci` утилита **: Мощный командный инструмент для просмотра PCIe-устройств. Используйте `lspci -nn` для отображения Vendor/Device ID, `lspci -vvv` для подробной информации, включая BAR и возможности, и `lspci -s <BUS:DEV.FUN> -xxxx` для дампа сырого конфигурационного пространства.
 
 ### **4.3 Environment Setup**
 
